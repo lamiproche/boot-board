@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>EX2</title>
+</head>
+<body>
+
+<ul>
+    <th:block th:each = "dto, status :${list}">
+        <li class="${status.even =='EVEN'}">AAA</li>
+    </th:block>
+    <!-- <th:block> - 별도의 태그가 없이 감싸는 형태로 사용 가능 -->
+</ul>
+
+
+<ul>
+    <!-- status 이용해서 반복문에 상태 줄 수도 있음 -->
+    <li th:each="dto, status :${list}">
+        [[${dto.regdate}]] --- [[${#temporals.format(dto.regdate, 'yyyy/MM/dd')}]]
+    </li>
+</ul>
+
+
+
+<script th:inline="javascript">
+
+    const arr =[[${list}]]
+
+    console.log(arr[0].sno)
+
+</script>
+
+</body>
+</html>

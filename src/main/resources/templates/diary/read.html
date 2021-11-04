@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorator="layout/layout2">
+
+<div class="card" layout:fragment="content">
+
+    <!-- diary card -->
+    <div class="card">
+        <div class="card-header">
+            diary Read
+        </div>
+        <div class="card-body">
+            <div class="input-group mb-3">
+                <span class="input-group-text">Dno</span>
+                <input type="text" name="dno" class="form-control" readonly
+                       th:value="${dto.dno}"  >
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Title</span>
+                <input type="text" name="title" class="form-control" readonly
+                       th:value="${dto.title}"   >
+            </div>
+
+            <div class="input-group mb-3">
+                <span class="input-group-text">Writer</span>
+                <input type="text" name="writer" class="form-control"  readonly
+                       th:value="${dto.writer}">
+            </div>
+
+            <div class="input-group mb-3">
+                <span class="input-group-text">RegDate</span>
+                <input type="text" name="regDate" class="form-control" readonly
+                       th:value="${#temporals.format(dto.regDate, 'yyyy/MM/dd HH:mm:ss')}" >
+            </div>
+
+            <div class="input-group mb-3">
+                <span class="input-group-text">ModDate</span>
+                <input type="text" name="modDate" class="form-control" readonly
+                       th:value="${#temporals.format(dto.modDate, 'yyyy/MM/dd HH:mm:ss')}">
+            </div>
+
+            <div class="input-group">
+                <span class="input-group-text">Content</span>
+                <textarea class="form-control" aria-label="With textarea" name="content" rows="4">[[${dto.content}]]</textarea>
+            </div>
+
+            <div class="my-4">
+                <div class="my-4">
+                    <div class="float-end">
+                        <button type="button" class="btn btn-primary" th:onclick="|modify(${dto.dno})|">Modify</button>
+                        <button type="button" class="btn btn-secondary" th:onclick="|moveList()|">List</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- 댓글 조회 div 끝 -->
+    <!-- end card -->
+
+    <!--  -->
+    <div class="card">
+        <div class="card-header">
+
+        </div>
+        <div class="card-body">
+            <div class="input-group mb-3">
+                <span class="input-group-text">Replyer</span>
+                <input type="text" name="replyer" class="form-control" >
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-text">ReplyText</span>
+                <input type="text" name="replyText" class="form-control" >
+            </div>
+            <div class="input-group mb-3">
+                <button class="btn btn-outline-primary" onclick="registerReply()">Reply Register</button>
+            </div>
+        </div>
+        <div class="card-footer">
+
+        </div>
+    </div>
+    <!-- end card -->
+
+
+    <!-- reply card -->
+    <div class="card">
+        <div class="card-header">
+            Replies
+        </div>
+        <div class="card-body">
+            <ul class="list-group replyUL">
+
+            </ul>
+        </div>
+
+        <div class="card-footer">
+            <ul class="pagination">
+
+            </ul>
+        </div>
+    </div>
+    <!-- end card -->
+
+
+</div>
+
+
+<th:block  layout:fragment="script">
+
+<!-- 위치 넣을 때 th block 내에 넣어야함 -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script th:inline="javascript">
+        function modify(dno){
+            console.log("----- modify -----")
+
+            const page = [[${pageRequestDTO.page}]]
+            const size = [[${pageRequestDTO.size}]]
+            const type = [[${pageRequestDTO.type}]]
+            const keyword = [[${pageRequestDTO.keyword}]]
+
+            let searchQuery = ''
+
+            if(type && keyword){
+                searchQuery += `&type=${type}&keyword=${keyword}`
+            }
+
+            self.location=`/diary/modify?dno=${dno}&page=${page}&size=${size}`+searchQuery
+
+            console.log("----- /modify -----")
+        }
+
+        function moveList(){
+            console.log("----- moveList -----")
+
+            const page = [[${pageRequestDTO.page}]]
+            const size = [[${pageRequestDTO.size}]]
+            const type = [[${pageRequestDTO.type}]]
+            const keyword = [[${pageRequestDTO.keyword}]]
+
+            let searchQuery = ''
+
+            if(type && keyword){
+                searchQuery += `&type=${type}&keyword=${keyword}`
+            }
+
+            self.location=`/diary/list?page=${page}&size=${size}` + searchQuery
+
+            console.log("----- /moveList -----")
+        }
+
+    </script>
+
+<!--    <script th:inline="javascript">-->
+
+<!--        const dno = [[${dto.dno}]]-->
+
+<!--        //댓글 수정해도 페이지정보가 따라가야하니까-->
+<!--        let replyPage = 1;-->
+<!--        let replySize = 10;-->
+
+<!--        function makeListAndPaging(replyPageResponse){-->
+<!--            console.log("-&#45;&#45;&#45;&#45; makeListAndPaging -&#45;&#45;&#45;&#45;")-->
+
+<!--            const dtoList = replyPageResponse.dtoList-->
+<!--            //dtoList = JS 배열-->
+<!--            //람다식쓰는것처럼 template에 맞게 변환시키면 따로 함수 안만들고도 사용 가능-->
+<!--            //js array map-->
+<!--            //한번에 dom 처리하는게 좋으니까-->
+
+<!--            replyPage = replyPageResponse.page-->
+<!--            size = replyPageResponse.size-->
+
+<!--            let str = ""-->
+
+<!--            for (const reply of dtoList) {-->
+<!--                // console.log(reply)-->
+<!--                str += "<li class='list-group-item d-flex justify-content-between align-items-center'>"-->
+<!--                str += `<div class="replyBox" data-rno="${reply.rno}"><span>${reply.rno}</span> <span class="rtext">${reply.replyText}</span>-->
+<!--                        <button class="btn btn-sm btn-outline-primary" onclick="modifyReply(this)">수정</button>-->
+<!--                        </div>`-->
+<!--                str += "</li>"-->
+
+<!--            }-->
+<!--            document.querySelector(".replyUL").innerHTML = str-->
+
+<!--            //paging-->
+<!--            const pagination = document.querySelector(".pagination")-->
+<!--            let pageStr = ""-->
+
+<!--            //prev-->
+<!--            if(replyPageResponse.prev){-->
+<!--                pageStr += `<li class="page-item"><a class="page-link"  href="javascript:getList(${replyPageResponse.start -1})" tabindex="-1">Previous</a></li>`-->
+<!--            }-->
+<!--            //num-->
+<!--            for(let i = replyPageResponse.start; i<= replyPageResponse.end; i++){-->
+<!--                pageStr += `<li class="page-item ${i==replyPageResponse.page?"active":""} "><a class="page-link" href="javascript:getList(${i})" tabindex="-1">${i}</a></li>`-->
+<!--            }-->
+
+<!--            //next-->
+<!--            if(replyPageResponse.next){-->
+<!--                pageStr += `<li class="page-item"><a class="page-link" href="javascript:getList(${replyPageResponse.end +1})" tabindex="-1">Next</a></li>`-->
+<!--            }-->
+
+<!--            pagination.innerHTML = pageStr-->
+<!--            console.log("-&#45;&#45;&#45;&#45; /makeListAndPaging -&#45;&#45;&#45;&#45;")-->
+<!--        }-->
+
+<!--        async function getList(pageNum) {-->
+<!--            console.log("-&#45;&#45;&#45;&#45; getList -&#45;&#45;&#45;&#45;")-->
+
+<!--            const response = await axios.get(`/replies/list/${dno}?page=${pageNum}`)-->
+<!--            console.log(response)-->
+
+<!--            const replyPageResponse = await response.data;-->
+<!--            console.log(replyPageResponse)-->
+
+<!--            makeListAndPaging(replyPageResponse)-->
+<!--            console.log("-&#45;&#45;&#45;&#45; /getList -&#45;&#45;&#45;&#45;")-->
+<!--        }-->
+
+<!--        function registerReply() {-->
+<!--            console.log("-&#45;&#45;&#45;&#45; registerReply -&#45;&#45;&#45;&#45;")-->
+
+<!--            const replyObj = {-->
+<!--                dno:dno,-->
+<!--                replyer:document.querySelector("input[name='replyer']").value,-->
+<!--                replyText:document.querySelector("input[name='replyText']").value-->
+<!--            }-->
+<!--            console.log(replyObj)-->
+
+<!--            async function registerAjax() {-->
+<!--                const response = await axios.post("/replies", replyObj)-->
+<!--                console.log(response)-->
+
+<!--                const replyPageResponse = await response.data-->
+
+
+<!--                document.querySelector("input[name='replyer']").value="";-->
+<!--                document.querySelector("input[name='replyText']").value="";-->
+<!--            }-->
+<!--            registerAjax();-->
+<!--            console.log("-&#45;&#45;&#45;&#45; /registerReply -&#45;&#45;&#45;&#45;")-->
+<!--        }-->
+
+<!--        let cloneReply = null;-->
+<!--        let targetLi = null;-->
+
+<!--        function modifyReply(ele) {-->
+<!--            console.log("-&#45;&#45;&#45;&#45; modifyReply -&#45;&#45;&#45;&#45;")-->
+
+<!--            const targetDiv = ele.closest(".replyBox")  //바깥의 div-->
+<!--            const currentTargetLi = ele.closest("li")  //안쪽의 li = 원본  -> Node.cloneNode()-->
+
+<!--            if (targetLi === null) {-->
+<!--                targetLi = currentTargetLi-->
+<!--            } else if (targetLi !== currentTargetLi) {-->
+<!--                // alert("기존 댓글 수정 강제 취소")-->
+<!--                targetLi.querySelector("div").remove()-->
+<!--                targetLi.appendChild(cloneReply)-->
+<!--                targetLi = currentTargetLi-->
+<!--            }-->
+
+<!--            cloneReply = targetDiv.cloneNode(true)  // true = deep copy = 안쪽의 내용물까지 copy-->
+
+<!--            const replyText = targetDiv.querySelector(".rtext").innerHTML-->
+<!--            const rno = targetDiv.getAttribute("data-rno")-->
+<!--            console.log(rno, replyText)  //수정하려는 댓글 원본 내용, 번호-->
+
+<!--            const modifyForm = `<div><input type="text" value="${replyText}" class="editText">-->
+<!--                                <button onclick="modifySend(this)" class="btn btn-sm btn-outline-primary">수정</button>-->
+<!--                                <button onclick="deleteReply(this)" class="btn btn-sm btn-outline-danger">삭제</button>-->
+<!--                                <button onclick="cancelModifyReply(this)" class="btn btn-sm btn-outline-dark">취소</button>-->
+<!--                                </div>`-->
+<!--            //여기서 this = button-->
+
+<!--            targetLi.innerHTML = modifyForm-->
+
+<!--            console.log("-&#45;&#45;&#45;&#45; /modifyReply -&#45;&#45;&#45;&#45;")-->
+<!--        }-->
+
+<!--        function cancelModifyReply(ele) {-->
+<!--            //댓글 수정취소 버튼-->
+<!--            console.log("-&#45;&#45;&#45;&#45; cancelModifyReply -&#45;&#45;&#45;&#45;")-->
+
+<!--            ele.closest("div").remove()  //div 지워버림-->
+
+<!--            //targetLi의 안쪽 element삭제-->
+<!--            targetLi.appendChild(cloneReply)-->
+
+<!--            // targetLi.innerHTML = cloneReply.innerHTML -> 이러면 div가 없어져서 문제됨-->
+<!--        }-->
+
+<!--        function deleteReply() {-->
+<!--            console.log("-&#45;&#45;&#45;&#45; deleteReply -&#45;&#45;&#45;&#45;")-->
+<!--            const rno = cloneReply.getAttribute("data-rno")-->
+<!--            console.log(rno)-->
+
+<!--            async function sendDeleteReply() {-->
+<!--                console.log("-&#45;&#45;&#45;&#45; sendDeleteReply -&#45;&#45;&#45;&#45;")-->
+<!--                //어느 dno의 어느 rno를 지워라-->
+<!--                const response = await axios.delete(`/replies/${dno}/${rno}?page=${replyPage}&size=${replySize}`)-->
+<!--                console.log(response)-->
+
+<!--                alert("댓글이 삭제되었습니다.")-->
+
+<!--                const replyPageResponse = await response.data;-->
+<!--                console.log(replyPageResponse)-->
+
+<!--                makeListAndPaging(replyPageResponse)-->
+
+<!--                console.log("-&#45;&#45;&#45;&#45; /sendDeleteReply -&#45;&#45;&#45;&#45;")-->
+<!--            }-->
+<!--            sendDeleteReply();-->
+<!--            console.log("-&#45;&#45;&#45;&#45; /deleteReply -&#45;&#45;&#45;&#45;")-->
+<!--        }-->
+
+<!--        function modifySend(ele) {-->
+<!--            console.log("-&#45;&#45;&#45;&#45; modifySend -&#45;&#45;&#45;&#45;")-->
+
+<!--            console.log(ele)-->
+
+<!--            const rno = cloneReply.getAttribute("data-rno")-->
+<!--            const replyText = document.querySelector(".editText").value-->
+
+
+<!--            const replyObj = {rno, replyText, dno}-->
+
+<!--            alert(replyText)-->
+
+<!--            async function updateReply() {-->
+<!--                console.log("-&#45;&#45;&#45;&#45; updateReply -&#45;&#45;&#45;&#45;")-->
+
+<!--                //어떤 게시물(dno)의 어떤 댓글(rno, replyText = replyObj) 수정-->
+<!--                const response = await axios.put(`/replies/${dno}/${rno}?page=${replyPage}&size=${replySize}`, replyObj)-->
+<!--                console.log(response)-->
+
+<!--                alert("댓글이 수정되었습니다.")-->
+<!--                const replyPageResponse = await response.data;-->
+<!--                console.log(replyPageResponse)-->
+
+<!--                makeListAndPaging(replyPageResponse)-->
+
+<!--                console.log("-&#45;&#45;&#45;&#45; /updateReply -&#45;&#45;&#45;&#45;")-->
+<!--            }-->
+<!--            updateReply();-->
+<!--            console.log("-&#45;&#45;&#45;&#45; /modifySend -&#45;&#45;&#45;&#45;")-->
+<!--        }-->
+
+<!--        getList(-1);-->
+
+<!--    </script>-->
+
+
+</th:block>
